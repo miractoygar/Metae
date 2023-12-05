@@ -142,10 +142,14 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-
+class Checker {
   static BrakeChecker brake_checker = BrakeChecker();
   static VehicleParams vehicle_params = VehicleParams();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+
+
 
   int _counter = 0;
 

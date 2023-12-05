@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:deliver/main.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -44,7 +45,11 @@ class Speedometer{
       checkSpeedAndMeasureTimeWhileOutOfRange(speed);
     }
 
-    AwesomeNotifications().createNotification(content: NotificationContent(id: 10, channelKey: "basic_channel", title: "Hızınız:", body: speed.toString()));
+    Checker.vehicle_params.updateSpeed(speed.round(), DateTime.now().second);
+
+    var brake = Checker.brake_checker.checkBrake();
+    AwesomeNotifications().createNotification(content: NotificationContent(id: 10, channelKey: "basic_channel", title: "Araç Bilgileri:", body: "Hız: ${speed.round()}kmh\r\nFrenleme Şiddeti: %${brake}"));
+
     print("current speed is : " + speed.toString());
     print("time10_30 is : " + speedometer.time10_30.toString());
     print("time30_10 is : " + speedometer.time30_10.toString());
@@ -54,7 +59,6 @@ class Speedometer{
   //Method to get the vehicle speed updates
   getSpeedUpdates() async {
 
-    print("Lokasyon");
     LocationSettings options =
     LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 10);
     Geolocator.getPositionStream().listen((position) {
