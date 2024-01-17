@@ -35,6 +35,7 @@ class Speedometer{
   final Geolocator _geolocator = Geolocator();
 
   void updateSpeed(Position position) {
+
     double speed = (position.speed) * 3.6;
     _speedometer.currentSpeed = speed;
 
@@ -45,14 +46,11 @@ class Speedometer{
       checkSpeedAndMeasureTimeWhileOutOfRange(speed);
     }
 
-    Checker.vehicle_params.updateSpeed(speed.round(), DateTime.now().second);
+    Checker.vehicle_params.updateSpeed(speed.round(), DateTime.now().millisecondsSinceEpoch ~/ 1000);
 
     var brake = Checker.brake_checker.checkBrake();
+    Checker.vehicle_params.setBrake(brake);
     AwesomeNotifications().createNotification(content: NotificationContent(id: 10, channelKey: "basic_channel", title: "Araç Bilgileri:", body: "Hız: ${speed.round()}kmh\r\nFrenleme Şiddeti: %${brake}"));
-
-    print("current speed is : " + speed.toString());
-    print("time10_30 is : " + speedometer.time10_30.toString());
-    print("time30_10 is : " + speedometer.time30_10.toString());
 
   }
 
@@ -60,9 +58,14 @@ class Speedometer{
   getSpeedUpdates() async {
 
     LocationSettings options =
-    LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 10);
-    Geolocator.getPositionStream().listen((position) {
+    LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 0);
+    Geolocator.getPositionStream(locationSettings: options).listen((position) {
       updateSpeed(position);
+      print("LAT: ${position.latitude}");
+      print("LONG: ${position.longitude}");
+      print("ALT: ${position.altitude}");
+
+
     });
 
   }
