@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:deliver/main.dart';
+import 'package:deliver/pages/home_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -46,7 +48,7 @@ class Speedometer{
       checkSpeedAndMeasureTimeWhileOutOfRange(speed);
     }
 
-    Checker.vehicle_params.updateSpeed(speed.round(), DateTime.now().millisecondsSinceEpoch ~/ 1000);
+    Checker.vehicle_params.updateSpeed(Random().nextInt(100), DateTime.now().millisecondsSinceEpoch ~/ 1000);
 
     var brake = Checker.brake_checker.checkBrake();
     Checker.vehicle_params.setBrake(brake);
