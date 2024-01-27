@@ -6,6 +6,7 @@ import 'package:deliver/main.dart';
 import 'package:deliver/pages/home_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 
 class Speedometer_Params {
@@ -38,6 +39,7 @@ class Speedometer{
 
   void updateSpeed(Position position) {
 
+    Checker.pos = position;
     double speed = (position.speed) * 3.6;
     _speedometer.currentSpeed = speed;
 
@@ -48,11 +50,10 @@ class Speedometer{
       checkSpeedAndMeasureTimeWhileOutOfRange(speed);
     }
 
-    Checker.vehicle_params.updateSpeed(Random().nextInt(100), DateTime.now().millisecondsSinceEpoch ~/ 1000);
+    Checker.vehicle_params.updateSpeed(speed.round(), DateTime.now().millisecondsSinceEpoch ~/ 1000);
 
     var brake = Checker.brake_checker.checkBrake();
     Checker.vehicle_params.setBrake(brake);
-    AwesomeNotifications().createNotification(content: NotificationContent(id: 10, channelKey: "basic_channel", title: "Araç Bilgileri:", body: "Hız: ${speed.round()}kmh\r\nFrenleme Şiddeti: %${brake}"));
 
   }
 
@@ -60,12 +61,13 @@ class Speedometer{
   getSpeedUpdates() async {
 
     LocationSettings options =
-    LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 0);
+    LocationSettings(accuracy: LocationAccuracy.bestForNavigation, distanceFilter: 0);
     Geolocator.getPositionStream(locationSettings: options).listen((position) {
       updateSpeed(position);
       print("LAT: ${position.latitude}");
       print("LONG: ${position.longitude}");
       print("ALT: ${position.altitude}");
+      Checker.positions.add(LatLng(position.latitude, position.longitude));
 
 
     });

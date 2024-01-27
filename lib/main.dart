@@ -1,4 +1,5 @@
 import 'package:deliver/pages/home_page.dart';
+import 'package:deliver/pages/login_page.dart';
 import 'package:deliver/vehicle_tracking/brake_checker.dart';
 import 'package:deliver/vehicle_tracking/speed_position.dart';
 import 'package:deliver/vehicle_tracking/vehicle_params.dart';
@@ -22,6 +23,14 @@ void main() async {
       permission == LocationPermission.unableToDetermine) {
     permission = await GeolocatorPlatform.instance.requestPermission();
   }
+
+
+// make sure to initialize before map loading
+  BitmapDescriptor.fromAssetImage(ImageConfiguration(size: Size(12, 12)),
+      'assets/assets/marker.png')
+      .then((d) {
+    Checker.markericon = d;
+  });
 
 
   Speedometer().initState();
@@ -48,6 +57,8 @@ class Checker {
   static BrakeChecker brake_checker = BrakeChecker();
   static VehicleParams vehicle_params = VehicleParams();
   static BitmapDescriptor markericon = BitmapDescriptor.defaultMarker;
+  static late Position pos;
+  static Set<LatLng> positions = {};
 
   static void addCustomIcon() {
     if(markericon != null) return;
@@ -95,6 +106,7 @@ class NoPermissionApp extends StatelessWidget {
     if (!_hasCheckedPermissions) {
       outWidget = Container(
         height: 20,
+
         width: 100,
         color: Colors.amber,
       );
