@@ -1,12 +1,18 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:deliver/main.dart';
 import 'package:deliver/pages/home_page.dart';
+import 'package:deliver/pages/login_page.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 
 
 class Speedometer_Params {
@@ -37,11 +43,28 @@ class Speedometer{
   Stopwatch _stopwatch = Stopwatch();
   final Geolocator _geolocator = Geolocator();
 
-  void updateSpeed(Position position) {
+  Future<void> updateSpeed(Position position) async {
 
     Checker.pos = position;
     double speed = (position.speed) * 3.6;
     _speedometer.currentSpeed = speed;
+    Uri uri  = Uri.parse("http://192.168.1.81:4850/api/location");
+
+    var data = jsonDecode(Checker.data);
+
+    var response = await http.post(uri,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "id": data["_id"],
+          "longitude": position.longitude,
+          "latitude": position.latitude,
+          "speed": speed.round(),
+
+        }));
+    Checker.vehicle_params.updateSpeed(speed.round(), DateTime.now().millisecondsSinceEpoch ~/ 1000);
+
+    var brake = Checker.brake_checker.checkBrake();
+    Checker.vehicle_params.setBrake(brake);
 
     if (speed >= SPEED_10 || speed <= SPEED_30) {
       checkSpeedAndMeasureTimeWhileInRange(speed);
@@ -50,28 +73,46 @@ class Speedometer{
       checkSpeedAndMeasureTimeWhileOutOfRange(speed);
     }
 
-    Checker.vehicle_params.updateSpeed(speed.round(), DateTime.now().millisecondsSinceEpoch ~/ 1000);
-
-    var brake = Checker.brake_checker.checkBrake();
-    Checker.vehicle_params.setBrake(brake);
-
   }
 
   //Method to get the vehicle speed updates
   getSpeedUpdates() async {
 
     LocationSettings options =
-    LocationSettings(accuracy: LocationAccuracy.bestForNavigation, distanceFilter: 0);
-    Geolocator.getPositionStream(locationSettings: options).listen((position) {
+    LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 100);
+    Geolocator.getPositionStream(locationSettings: options).listen((position) async {
       updateSpeed(position);
       print("LAT: ${position.latitude}");
       print("LONG: ${position.longitude}");
       print("ALT: ${position.altitude}");
-      Checker.positions.add(LatLng(position.latitude, position.longitude));
+      final path = await _localPath;
 
+
+
+      Uri uri  = Uri.parse("http://192.168.1.81:4850/api/get/dailyRoute");
+
+      var data = jsonDecode(Checker.data);
+
+      var response = await http.post(uri,
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode({
+            "id": data["_id"],
+
+          }));
+      var data2 = jsonDecode(response.body);
+      print(data2["positionList"]);
+
+      Checker.positions = {};
+      Set.from(data2["positionList"].reversed).forEach((a) => Checker.positions.add(LatLng(a["latitude"], a["longitude"])));
 
     });
 
+  }
+
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    return directory.path;
   }
 
   void checkSpeedAndMeasureTimeWhileInRange(double vehicleSpeed) {

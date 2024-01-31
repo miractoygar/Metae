@@ -1,5 +1,11 @@
+import 'dart:convert';
 import 'dart:ui';
-
+import 'package:deliver/main.dart';
+import 'package:deliver/pages/home_page.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
@@ -14,7 +20,9 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
   }
-
+  final TextEditingController id = TextEditingController();
+  final TextEditingController password = TextEditingController();
+  static String data = "";
   @override
   Widget build(BuildContext context) {
     return MaterialApp(home: Scaffold(
@@ -37,6 +45,7 @@ class _LoginPageState extends State<LoginPage> {
               child: Padding(
                 padding: const EdgeInsets.only(left: 20.0),
                   child: TextField(
+                    controller: id,
                     decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: "رقم العميل"
@@ -57,6 +66,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: Padding(
                       padding: const EdgeInsets.only(left: 20.0),
                       child: TextField(
+                        controller: password,
                         obscureText: true,
                         decoration: InputDecoration(
                             border: InputBorder.none,
@@ -69,8 +79,40 @@ class _LoginPageState extends State<LoginPage> {
 
               Padding(padding: const EdgeInsets.symmetric(horizontal: 75),
               child: GestureDetector(
-                onTap: (){
-                  openDialog();
+                onTap: () async {
+
+                  Uri uri  = Uri.parse("http://192.168.1.81:4850/api/login");
+                  print(uri.port);
+                  var response = await http.post(uri,
+                      headers: {"Content-Type": "application/json"},
+                      body: jsonEncode({
+                        "id": int.parse(id.value.text),
+                        "password": password.value.text
+                      }));
+
+                  Checker.data = response.body;
+                  if(jsonDecode(response.body)["company"] is String){
+                    Uri uri  = Uri.parse("http://192.168.1.81:4850/api/get/dailyRoute");
+
+                    var data = jsonDecode(Checker.data);
+
+                    var response = await http.post(uri,
+                        headers: {"Content-Type": "application/json"},
+                        body: jsonEncode({
+                          "id": data["_id"],
+
+                        }));
+                    var data2 = jsonDecode(response.body);
+                    Checker.positions = {};
+                    Set.from(data2["positionList"].reversed).forEach((a) => Checker.positions.add(LatLng(a["latitude"], a["longitude"])));
+
+                        final path = await _localPath;
+                    File('$path/data.json').writeAsString(response.body);
+                    Navigator.push(context,   MaterialPageRoute(builder: (context) => HomePage()));
+                    print(await File('$path/data.json').readAsString());
+                  }else{
+                    openDialog();
+                  }
                 },
                   child: Container(
                     padding: EdgeInsets.all(13),
@@ -106,6 +148,11 @@ class _LoginPageState extends State<LoginPage> {
   bool popup = false;
   var alertcont;
 
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    return directory.path;
+  }
   void openDialog() {
     showDialog(
         context: context,
@@ -116,12 +163,12 @@ class _LoginPageState extends State<LoginPage> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(23.0)),
               child: Container(
-                  height: 200.0,
-                  width: double.infinity,
+                  height: 75.0,
+                  width: 10.0,
                   decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(23)),
-                  padding: EdgeInsets.fromLTRB(20, 10,20,  10),
+                  padding: EdgeInsets.fromLTRB(30, 10,30,  10),
 
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -131,121 +178,11 @@ class _LoginPageState extends State<LoginPage> {
                         margin: EdgeInsets.only(bottom: 20, left: 20, right: 20),
                         child: Column(
                           children: [
-                            Text("أدخل الرمز المؤلف من 6 أرقام الذي تم إرساله إلى رقم هاتفك. (+50-971-XXXXX67)")
+                            Text("المعلومات المدخلة غير صحيحة!")
                           ],
                         ),
                       ),
-                      Container(
 
-                        child: Row(
-
-                          children: [
-
-                            Expanded(
-                              
-                                child: Container(
-                                  height: 40,
-                                  margin: EdgeInsets.only(left: 7, right: 7),
-                                  width: 10,
-                                  child: TextField(
-                                    keyboardType: TextInputType.number,
-                                    textAlign: TextAlign.center,
-                                    decoration: InputDecoration(border: OutlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.black),
-
-                                    ),
-                                      contentPadding: EdgeInsets.only(
-                                    bottom: 40 / 2,  // HERE THE IMPORTANT PART
-                                    )),),
-                                )),
-                            Expanded(
-
-                                child: Container(
-                                  height: 40,
-                                  margin: EdgeInsets.only(left: 7, right: 7),
-                                  width: 10,
-                                  child: TextField(
-                                    keyboardType: TextInputType.number,
-                                    textAlign: TextAlign.center,
-                                    decoration: InputDecoration(border: OutlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.black),
-
-                                    ),
-                                        contentPadding: EdgeInsets.only(
-                                          bottom: 40 / 2,  // HERE THE IMPORTANT PART
-                                        )),),
-                                )),
-                            Expanded(
-
-                                child: Container(
-                                  height: 40,
-                                  margin: EdgeInsets.only(left: 7, right: 7),
-                                  width: 10,
-                                  child: TextField(
-                                    keyboardType: TextInputType.number,
-                                    textAlign: TextAlign.center,
-                                    decoration: InputDecoration(border: OutlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.black),
-
-                                    ),
-                                        contentPadding: EdgeInsets.only(
-                                          bottom: 40 / 2,  // HERE THE IMPORTANT PART
-                                        )),),
-                                )),
-                            Expanded(
-
-                                child: Container(
-                                  height: 40,
-                                  margin: EdgeInsets.only(left: 7, right: 7),
-                                  width: 10,
-                                  child: TextField(
-                                    keyboardType: TextInputType.number,
-                                    textAlign: TextAlign.center,
-                                    decoration: InputDecoration(border: OutlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.black),
-
-                                    ),
-                                        contentPadding: EdgeInsets.only(
-                                          bottom: 40 / 2,  // HERE THE IMPORTANT PART
-                                        )),),
-                                )),
-                            Expanded(
-
-                                child: Container(
-                                  height: 40,
-                                  margin: EdgeInsets.only(left: 7, right: 7),
-                                  width: 10,
-                                  child: TextField(
-                                    keyboardType: TextInputType.number,
-                                    textAlign: TextAlign.center,
-                                    decoration: InputDecoration(border: OutlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.black),
-
-                                    ),
-                                        contentPadding: EdgeInsets.only(
-                                          bottom: 40 / 2,  // HERE THE IMPORTANT PART
-                                        )),),
-                                )),
-                            Expanded(
-
-                                child: Container(
-                                  height: 40,
-                                  margin: EdgeInsets.only(left: 7, right: 7),
-                                  width: 10,
-                                  child: TextField(
-                                    keyboardType: TextInputType.number,
-                                    textAlign: TextAlign.center,
-                                    decoration: InputDecoration(border: OutlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.black),
-
-                                    ),
-                                        contentPadding: EdgeInsets.only(
-                                          bottom: 40 / 2,  // HERE THE IMPORTANT PART
-                                        )),),
-                                )),
-                          ],
-                        ),
-                      )
                     ],
                   )));
         }).then((value) => popup = false);
