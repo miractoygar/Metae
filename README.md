@@ -15,7 +15,7 @@ Başlıca özellikler:
     - Grup üyesi yetkisinde sadece grup üyesinin ayarlamalarına göre uygulamayı kullanabilecek ancak grup yöneticisi isterse herhangi bir grup üyesinede kendisi kadar yüksek yetkiler verebilir.
     - Çocuk modu ise herhangi bir uygulama içi hiç bir şeye erişemeyecek ancak sadece uygulama içi yardım butonunu kullanabilecek.
     - Engelli modu ise daha hassas bir mod olacak, bu mod sayesinde özel yardıma ihtiyacı olan insanlar daha çok kontrol altında olacak. örneğin ona belirlediğiniz konum alanı olacak bu konum alanının dışına çıktığında hemen uyarı verilecek. Bunun haricinde ise konumu bir süre aynı yerde kaldığında uyarı verilecek. Herhangi bir yerde kaldığında belirli bir konuma gitmek istediğinde ona gitmek istediği konumu tarif ederek kolaylıkla ulaşmasını sağlayacak.
-   
+- Etkinlik özelliği ile grup üyeleri arasında bir etkinlik başlatabilme. Bu sayede belirli bir konum ayarlayarak grup üyelerin etkinliğe katılıp katılmayacağını görme ve etkinlik konumuna herhangi biri gittiğinde diğer üyelere bildirme. Bir üye bulunduğu konumdan etkinlik yerine gelmesi için çıktığında eğer hesaplamalara göre geç kalacağı anlaşıldığında diğer üyelere bildirim gönderecek. Etkinliğe gelecek kişilere etkinlik oluşturulduğunda nasıl gelecekleri sorulacak. Örneğin bir kişi araç ile geleceğini söylediğinde diğerleri o kişinin aracında geleceğini bildirebilecek ve yakın konumdaki kişiler farklı araçla geleceğini bildirdiğinde onlara bir öneri sunarak beraber gitmeleri halinde doğaya verecekleri zararın azaldığını göstererek onları daha iyi bir çevre yaratmaya yönlendirecek.  
 ## Özellikler Versiyon 2
 
  2 adet bileklik tipi olacak bunlar uygulamayla birlikte çalışacak.
